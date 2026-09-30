@@ -1,6 +1,6 @@
 # Cybersecurity
 ## Cybersecurity Portfolio
-Building a Python threat intelligence engine to parse access.log, calculate incident thresholds, and trigger automated orchestration (SOAR) workflows.
+Building a Python threat intelligence engine to parse log files, calculate incident thresholds, and trigger automated orchestration (SOAR) workflows.
 - Use state flags to allow further system remediation steps.
 
 ## Labs & Academic Work
