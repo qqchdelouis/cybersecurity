@@ -55,4 +55,7 @@ if __name__ == "__main__":
         sys.exit(1)
     FAILED_LOGIN_THRESHOLD = 50  # Seuil d'alerte
     bad_ips = analyze_security_logs(LOG_FILE_PATH, FAILED_LOGIN_THRESHOLD)
-    print(bad_ips)
+    quoted_ips = ["'" + ip + "'" for ip in bad_ips]
+    bash_command = "BAD_IPS=(" + " ".join(quoted_ips) + ")"
+    print(bash_command)
+
