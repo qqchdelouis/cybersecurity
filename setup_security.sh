@@ -25,4 +25,36 @@ sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/
 sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 sudo systemctl restart sshd
 
+# ==============================================================================
+# SOUS-MODULE OPTIONNEL : MASQUAGE DES JETONS NGINX
+# ==============================================================================
+NGINX_CONF="/etc/nginx/nginx.conf"
+
+if [ -f "$NGINX_CONF" ]; then
+    echo "🛡️ [HARDENING] Nginx detected. Masking software information tokens..."
+    
+    # Sauvegarder le fichier de configuration maître
+    cp "$NGINX_CONF" "${NGINX_CONF}.bak_$(date +%F_%T)"
+    
+    # Vérifiez si `server_tokens` est déjà explicitement déclaré dans le fichier.
+    if grep -q "server_tokens" "$NGINX_CONF"; then
+        # Ensure any active or commented server_tokens line is forced to 'off'
+        sed -i 's/.*server_tokens.*/\tserver_tokens off;/g' "$NGINX_CONF"
+    else
+        # If it doesn't exist, inject it cleanly into the http { ... } block
+        sed -i '/http {/a \\tserver_tokens off;' "$NGINX_CONF"
+    fi
+
+    # Vérifiez les paramètres de syntaxe avant d’appliquer les modifications.
+    if nginx -t > /dev/null 2>&1; then
+        echo "✅ [SUCCESS] Nginx syntax validation passed. Reloading daemon..."
+        systemctl reload nginx
+    else
+        echo "❌ [ERROR] Nginx configuration syntax check failed. Reverting changes."
+        mv "${NGINX_CONF}.bak_*" "$NGINX_CONF"
+    fi
+else
+    echo "ℹ️ [INFO] Nginx configuration file not found at $NGINX_CONF. Skipping Nginx sub-routine."
+fi
+
 echo "Server hardening complete."
